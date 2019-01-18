@@ -13,12 +13,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 
 import com.sample.enums.AssetStatus;
 import com.sample.models.Asset;
 import com.sample.repo.AssetRepo;
 import com.sample.response.AssetResponse;
+import com.sample.utils.AmazonClient;
 import com.sample.utils.ResponseMessages;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -29,21 +31,19 @@ public class AssetServiceImplTest {
 
     @InjectMocks
     private static IAssetService assetService = new AssetServiceImpl();
+    
+    @Mock
+	private AmazonClient amazonClient;
 	
 	@Test
-	public void postAsset() throws Exception
+	public void uploadAsset() throws Exception
 	{
 	    MockMultipartFile file = new MockMultipartFile("field1", "", "text/plain", "field1 data".getBytes());
+	  
+	    Mockito.when(amazonClient.uploadFile(file)).thenReturn("http://someurl/field1");
 	    
-	    AssetResponse response = assetService.postAsset(file);
-	    
-	    Asset asset = null;
-	    Optional<Asset> assetOptional = assetRepo.findById(response.getId());
-		if (assetOptional.isPresent())
-		    asset = assetOptional.get();
-		
-		assertEquals("fieild1", asset.getDownloadURL());
-	    assertEquals(AssetStatus.UPLOADED, asset.getStatus());
+	    String downloadURL = amazonClient.uploadFile(file);
+	    Assert.assertEquals("http://someurl/field1", downloadURL);
 	}
 	
 	@Test

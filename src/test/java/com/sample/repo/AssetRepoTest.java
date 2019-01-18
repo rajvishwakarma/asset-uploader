@@ -4,8 +4,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -43,5 +45,15 @@ public class AssetRepoTest {
         
     	assertEquals(2, assets.size());
     }
+    
+    @Test
+	public void saveAsset() throws Exception
+	{
+	    Asset asset = new Asset("http://someurl/field1", AssetStatus.UPLOADED);
+	    
+	    Asset assetRetreived = assetRepo.save(asset);
+	    Assert.assertEquals(asset.getDownloadURL(), assetRetreived.getDownloadURL());
+	    Assert.assertEquals(asset.getStatus(), assetRetreived.getStatus());
+	}
  
 }
