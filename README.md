@@ -29,6 +29,7 @@ spring.datasource.password =
 
 Finally, create an S3 bucket, name it bucket-name and give read permissions to anonymous users. Just copy and paste this aws policy to enable anonymous read access:
 
+```mermaid
 {
   "Version":"2012-10-17",
   "Statement":[
@@ -41,23 +42,29 @@ Finally, create an S3 bucket, name it bucket-name and give read permissions to a
     }
   ]
 }
+```
 
 ## AWS configuration
 
 AWS configuration that can be modified in application.properties file
 
+```mermaid
   amazonProperties.endpointUrl = ########
   amazonProperties.accessKey = ############
   amazonProperties.secretKey = ##############
   amazonProperties.bucketName = bucket-name
+```
+  
 
 
 # Run the application
 
 For the impatient...
 
+```mermaid
   git clone https://github.com/rajvishwakarma/asset-uploader.git
   cd asset-uploader
   mvn clean compile 
   mvn package
   mvn spring-boot:run
+```
