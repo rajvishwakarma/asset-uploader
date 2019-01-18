@@ -57,7 +57,11 @@ amazonProperties.bucketName = bucket-name
 For the impatient...
 
 git clone https://github.com/rajvishwakarma/asset-uploader.git
+
 cd asset-uploader
+
 mvn clean compile
+
 mvn package
+
 mvn spring-boot:run
