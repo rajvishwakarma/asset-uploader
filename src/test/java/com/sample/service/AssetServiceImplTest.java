@@ -2,17 +2,18 @@ package com.sample.service;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.sample.enums.AssetStatus;
 import com.sample.models.Asset;
@@ -20,24 +21,14 @@ import com.sample.repo.AssetRepo;
 import com.sample.response.AssetResponse;
 import com.sample.utils.ResponseMessages;
 
-@RunWith(SpringRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class AssetServiceImplTest {
 	
-	@TestConfiguration
-    static class AssetServiceImplTestContextConfiguration {
-  
-        @Bean
-        public AssetServiceImpl assetService() {
-            return new AssetServiceImpl();
-        }
-    }
-	
-	
-	@MockBean
-	AssetRepo assetRepo;
-	
-	@Autowired
-	AssetServiceImpl assetService;
+	@Mock
+    private static AssetRepo assetRepo;
+
+    @InjectMocks
+    private static IAssetService assetService = new AssetServiceImpl();
 	
 	@Test
 	public void postAsset() throws Exception
@@ -58,53 +49,51 @@ public class AssetServiceImplTest {
 	@Test
 	public void updateAsset() throws Exception
 	{
-	    Asset asset1 = assetRepo.save(new Asset("http://someurl1"));
-	    
-	    AssetResponse response = assetService.updateAsset(asset1.getId(), AssetStatus.ARCHIVED);
-	    		
-	    Asset asset2 = null;
-	    Optional<Asset> assetOptional = assetRepo.findById(response.getId());
-		if (assetOptional.isPresent())
-		    asset2 = assetOptional.get();
-		
-	    assertEquals(asset1.getStatus(), asset2.getStatus());
-	    
+	    Asset asset = new Asset(1, "http://someurl", AssetStatus.UPLOADED);
+	  	
+	    Optional<Asset> assetOptional = Optional.of(asset);
+	    Mockito.when(assetRepo.findById(asset.getId())).thenReturn(assetOptional);
+
+        AssetResponse response = assetService.updateAsset(asset.getId(), AssetStatus.ARCHIVED);
+
+        Assert.assertEquals(ResponseMessages.SUCCESS, response.getMessage());
 	}
 	
 	@Test
 	public void getAssetURL() throws Exception
 	{
-	    Asset asset1 = assetRepo.save(new Asset("http://someurl1"));
-	    asset1 = assetRepo.save(asset1);
+		Asset asset1 = new Asset(1, "http://someurl1", AssetStatus.UPLOADED);
 	    
+		Optional<Asset> assetOptional1 = Optional.of(asset1);
+	    Mockito.when(assetRepo.findById(asset1.getId())).thenReturn(assetOptional1);
+		
 	    AssetResponse response1 = assetService.getAssetURL(asset1.getId());
-	    assertEquals(response1.getMessage(), ResponseMessages.ASSET_ARCHIVED);
+	    Assert.assertEquals(ResponseMessages.SUCCESS, response1.getMessage());
+	    Assert.assertEquals(asset1.getDownloadURL(), response1.getDownloadURL());
 	    
-	    Asset asset2 = assetRepo.save(new Asset("http://someurl2"));
+	    Asset asset2 = new Asset(2, "http://someurl2", AssetStatus.UPLOADED);
 	    asset2.setStatus(AssetStatus.ARCHIVED);
-	    asset2 = assetRepo.save(asset2);
+	    
+	    Optional<Asset> assetOptional2 = Optional.of(asset2);
+	    Mockito.when(assetRepo.findById(asset2.getId())).thenReturn(assetOptional2);
 	    
 	    AssetResponse response2 = assetService.getAssetURL(asset2.getId());
-	    assertEquals(response2.getMessage(), ResponseMessages.SUCCESS);
+	    Assert.assertEquals(ResponseMessages.ASSET_ARCHIVED, response2.getMessage());
+	    Assert.assertNull(response2.getDownloadURL());
 	}
 	
 	@Test
 	public void getAssetList() throws Exception
 	{
-		Asset asset1 = new Asset("http://someurl1", AssetStatus.UPLOADED);
-    	assetRepo.save(asset1);
-    	
-    	Asset asset2 = new Asset("http://someurl2", AssetStatus.ARCHIVED);
-    	assetRepo.save(asset2);
-    	
-    	Asset asset3 = new Asset("http://someurl3", AssetStatus.UPLOADED);
-    	assetRepo.save(asset3);
-    	
-    	Asset asset4 = new Asset("http://someurl4", AssetStatus.ARCHIVED);
-    	assetRepo.save(asset4);
+		List<Asset> assets = new ArrayList<>();
+		
+		assets.add(new Asset(1, "http://someurl1", AssetStatus.UPLOADED));
+		assets.add(new Asset(2, "http://someurl1", AssetStatus.UPLOADED));
      
-    	List<Asset> assets = assetService.getAssetList();
+	    Mockito.when(assetRepo.findAllAssets()).thenReturn(assets);
+		
+    	List<Asset> retreivedAssets = assetService.getAssetList();
         
-    	assertEquals(2, assets.size());
+    	assertEquals(2, retreivedAssets.size());
 	}
 }

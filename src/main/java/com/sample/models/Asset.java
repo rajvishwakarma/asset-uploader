@@ -57,4 +57,12 @@ public class Asset extends BaseEntity {
 		this.status = status;
 	}
 	
+	public Asset(Integer id, String downloadURL, AssetStatus status) {
+		super.createdAt = new Date();
+		this.id = id;
+		this.timestamp = new Date().getTime();
+		this.downloadURL = downloadURL;
+		this.status = status;
+	}
+	
 }
